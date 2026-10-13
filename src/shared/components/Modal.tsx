@@ -1,0 +1,73 @@
+"use client";
+
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  maxWidthClass?: string;
+  /** Accessible name for the dialog when it has no visible heading with an id. */
+  ariaLabel?: string;
+  /** id of the element that titles the dialog. */
+  ariaLabelledBy?: string;
+}
+
+/**
+ * Generic overlay dialog — used for the Task/Meeting/Call "quick create"
+ * popups, matching Zoho CRM's Create Task / Create Meeting / Log Call
+ * modals rather than a full page navigation.
+ */
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  maxWidthClass = "max-w-2xl",
+  ariaLabel,
+  ariaLabelledBy,
+}: ModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden bg-black/40 p-2 pt-[3vh] animate-fade-in sm:p-4 sm:pt-[6vh]"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabelledBy ? undefined : ariaLabel}
+        aria-labelledby={ariaLabelledBy}
+        onClick={(e) => e.stopPropagation()}
+        className={`relative flex max-h-[calc(100dvh-3vh-1rem)] w-full sm:max-h-[calc(100dvh-6vh-2rem)] flex-col ${maxWidthClass} rounded-lg border border-line bg-surface shadow-xl animate-scale-in`}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 z-10 rounded-md p-1 text-ink-soft hover:bg-paper hover:text-fg"
+        >
+          <X size={18} />
+        </button>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}

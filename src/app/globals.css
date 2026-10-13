@@ -1,0 +1,602 @@
+@import "tailwindcss";
+
+/* Enables class-based dark mode: add/remove `.dark` on <html> to switch
+   themes, instead of only following the OS-level color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand accents — constant across both themes */
+  --color-ink: #12213a;
+  --color-ink-2: #1b2e4d;
+  --color-slate: #4c6785;
+  --color-amber: #e2a33b;
+  --color-amber-dark: #c98826;
+  --color-danger: #c1462f;
+  --color-success: #2f8f5b;
+
+  /* Theme-aware surfaces — overridden inside .dark below */
+  --color-paper: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-line: #e3e7ed;
+  --color-fg: #12213a;
+  --color-ink-soft: #5b6472;
+  --color-slate-light: #dce6f0;
+  --color-danger-soft: #fbe9e5;
+  --color-success-soft: #e7f4ed;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+}
+
+.dark {
+  --color-paper: #12141a;
+  --color-surface: #1a1d26;
+  --color-line: #2b2f3a;
+  --color-fg: #eef1f6;
+  --color-ink-soft: #9aa1b1;
+  --color-slate-light: #080c17;
+  --color-danger-soft: #3a201c;
+  --color-success-soft: #163524;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  color-scheme: light;
+}
+
+/* The dashboard shell scrolls inside <main> only. Locking the document
+   removes the second (browser-level) scrollbar. */
+html:has(.lp-app-shell),
+body:has(.lp-app-shell) {
+  overflow: hidden;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+::selection {
+  background-color: var(--color-amber);
+  color: var(--color-ink);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Small, purposeful motion, used sparingly --- */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-toast-in {
+  animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.animate-menu-in {
+  animation: menu-in 0.12s ease-out both;
+  transform-origin: top left;
+}
+
+/* Skeleton loading shimmer — replaces flat animate-pulse blocks */
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-paper) 25%,
+    var(--color-line) 50%,
+    var(--color-paper) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Row insert — a brief highlight wash for a just-created record */
+@keyframes row-highlight {
+  0% {
+    background-color: var(--color-amber);
+    opacity: 0.25;
+  }
+  100% {
+    background-color: transparent;
+    opacity: 1;
+  }
+}
+.animate-row-highlight {
+  animation: row-highlight 1.8s ease-out;
+}
+
+/* Row remove — fade + collapse before the row actually leaves the DOM */
+@keyframes row-remove {
+  from {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleY(0.9);
+  }
+}
+.animate-row-remove {
+  animation: row-remove 0.2s ease-in both;
+  transform-origin: top;
+}
+
+/* Status pipeline — a quick pulse on the stage you just clicked, while
+   the update is saving */
+@keyframes stage-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.96);
+  }
+}
+.animate-stage-pulse {
+  animation: stage-pulse 0.5s ease-in-out infinite;
+}
+
+/* Empty states — gentle settle-in rather than appearing instantly */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+
+/* Shake — draws the eye to a validation error without being alarming */
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Pop — a quick, small entrance for icons (e.g. a toast's checkmark) */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-pop-in {
+  animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Bell ring — very small, brief tilt used only when a new notification
+   arrives (not a persistent/looping animation). Reduced-motion users get
+   this clamped to near-zero duration by the global rule above. */
+@keyframes bell-ring {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-10deg);
+  }
+  40% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+}
+.animate-bell-ring {
+  animation: bell-ring 0.5s ease-in-out;
+}
+
+/*
+ * Smooth theme switch — elements that don't already declare their own
+ * `transition` utility (which takes precedence via specificity) get a
+ * gentle color cross-fade instead of the light/dark toggle applying
+ * instantly. Kept to color-related properties only, so it never fights
+ * with hover/press transforms elsewhere.
+ */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease;
+  transition-duration: 0.25s;
+}
+
+/* LeadPulse visual refresh */
+:root {
+  --lp-shadow: 0 10px 35px rgba(18, 33, 58, 0.07);
+  --lp-shadow-hover: 0 18px 50px rgba(18, 33, 58, 0.11);
+}
+
+.dark {
+  --lp-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  --lp-shadow-hover: 0 20px 55px rgba(0, 0, 0, 0.3);
+}
+
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes status-menu-in {
+  from { opacity: 0; transform: translateY(-5px) scale(.985); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.animate-status-menu { animation: status-menu-in .18s cubic-bezier(.16,1,.3,1) both; }
+
+@keyframes inline-edit-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-inline-edit { animation: inline-edit-in .18s cubic-bezier(.16,1,.3,1) both; }
+
+@keyframes soft-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(226,163,59,0); }
+  50% { box-shadow: 0 0 0 5px rgba(226,163,59,.08); }
+}
+.animate-soft-glow { animation: soft-glow 2.2s ease-in-out infinite; }
+
+.lp-surface {
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  box-shadow: var(--lp-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.lp-card {
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  box-shadow: var(--lp-shadow);
+  transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, border-color .2s ease;
+}
+.lp-card:hover { transform: translateY(-2px); box-shadow: var(--lp-shadow-hover); }
+
+.lp-page-bg {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(226,163,59,.08), transparent 28%),
+    radial-gradient(circle at 15% 20%, rgba(76,103,133,.05), transparent 30%),
+    var(--color-paper);
+}
+
+/* Dark mode: drop the warm amber glow in the top-right corner — on the dark
+   paper colour it reads as a muddy yellow patch. Keep only the cool tint. */
+.dark .lp-page-bg {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(76,103,133,.05), transparent 30%),
+    var(--color-paper);
+}
+
+/* ── Date / time picker popovers ───────────────────────────────────── */
+@keyframes popover-down {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes popover-up {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-popover-down { animation: popover-down 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-popover-up   { animation: popover-up 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Month change: the day grid slides in from the direction of travel. */
+@keyframes cal-next {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes cal-prev {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-cal-next { animation: cal-next 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-cal-prev { animation: cal-prev 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Record picker: "curtain" dropdown ─────────────────────────────────
+   The panel is revealed top-to-bottom like a curtain being drawn. The
+   clip-path keeps negative side/bottom insets so the box-shadow is never
+   clipped once the curtain is fully open. Rows then cascade in. */
+@keyframes curtain-drop {
+  from { clip-path: inset(0 -28px 100% -28px); opacity: 0.35; transform: translateY(-6px); }
+  to   { clip-path: inset(0 -28px -28px -28px); opacity: 1; transform: translateY(0); }
+}
+@keyframes curtain-lift {
+  from { clip-path: inset(0 -28px -28px -28px); opacity: 1; transform: translateY(0); }
+  to   { clip-path: inset(0 -28px 100% -28px); opacity: 0; transform: translateY(-6px); }
+}
+@keyframes curtain-rise {
+  from { clip-path: inset(100% -28px 0 -28px); opacity: 0.35; transform: translateY(6px); }
+  to   { clip-path: inset(-28px -28px 0 -28px); opacity: 1; transform: translateY(0); }
+}
+@keyframes curtain-fall {
+  from { clip-path: inset(-28px -28px 0 -28px); opacity: 1; transform: translateY(0); }
+  to   { clip-path: inset(100% -28px 0 -28px); opacity: 0; transform: translateY(6px); }
+}
+.curtain-panel[data-side="below"][data-state="open"]    { animation: curtain-drop 0.36s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.curtain-panel[data-side="below"][data-state="closing"] { animation: curtain-lift 0.17s cubic-bezier(0.4, 0, 0.6, 1) both; }
+.curtain-panel[data-side="above"][data-state="open"]    { animation: curtain-rise 0.36s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.curtain-panel[data-side="above"][data-state="closing"] { animation: curtain-fall 0.17s cubic-bezier(0.4, 0, 0.6, 1) both; }
+
+@keyframes curtain-row {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.curtain-row {
+  animation: curtain-row 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 20ms + 70ms);
+}
+
+/* Backdrop behind an open picker: fades/blurs in with the curtain. */
+@keyframes curtain-backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes curtain-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+.curtain-backdrop[data-state="open"]    { animation: curtain-backdrop-in 0.25s ease-out both; }
+.curtain-backdrop[data-state="closing"] { animation: curtain-backdrop-out 0.17s ease-in both; pointer-events: none; }
+
+/* ── Theme switch: circular reveal ─────────────────────────────────────
+   ThemeToggle runs the switch inside document.startViewTransition() and
+   animates the NEW snapshot with a growing clip-path circle centred on
+   the toggle button (see ThemeToggle.tsx). The browser's default
+   cross-fade is turned off so only the reveal is visible. While the
+   transition runs, `.theme-switching` suppresses per-element colour
+   transitions so nothing double-fades underneath the reveal. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+}
+
+/* Toggle icon: the incoming sun/moon turns into place. */
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+.animate-theme-icon {
+  animation: theme-icon-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Progressive disclosure (ShowMoreFields) ──────────────────────────
+   Height animates 0fr -> 1fr, so the panel opens and closes smoothly
+   without measuring content. `visibility` flips after the close finishes
+   so hidden inputs can't be tabbed to. */
+.lp-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease, visibility 0s linear 0.36s;
+}
+.lp-reveal[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition: grid-template-rows 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease 0.05s, visibility 0s;
+}
+.lp-reveal > .lp-reveal-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+/* Once fully open, let dropdowns (pickers, date popovers) escape. */
+.lp-reveal[data-open="true"][data-settled="true"] > .lp-reveal-inner {
+  overflow: visible;
+}
+
+/* ── Small screens: use the space ─────────────────────────────────────
+   Tables keep their horizontal scroll, but cells are tightened so more
+   columns are visible per screen. */
+@media (max-width: 639px) {
+  .lp-card table th,
+  .lp-card table td {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .lp-card:hover {
+    transform: none;
+  }
+}
+
+/* Drawer backdrop (mobile sidebar) */
+@keyframes drawer-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-drawer-backdrop {
+  animation: drawer-backdrop-in 0.25s ease-out both;
+}
+
+/* ── List pages: fixed header, scrolling rows ──────────────────────────
+   Pages that render a `.lp-list-page` card (Leads, Contacts, Accounts,
+   Tasks, Meetings, Calls, Users, Reminders, activity log) stop scrolling
+   as a whole page. The title / filter bar and the pagination footer stay
+   put, the column headings stick to the top of the table, and only the
+   rows scroll (`.lp-table-scroll`). Short viewports (e.g. phones in
+   landscape) fall back to normal page scrolling so nothing gets squeezed. */
+@media (min-height: 600px) {
+  .lp-app-shell main:has(.lp-list-page) {
+    overflow: hidden;
+  }
+  /* <main> > padding wrapper (dashboard/layout) > template.tsx wrapper */
+  .lp-app-shell main:has(.lp-list-page) > div,
+  .lp-app-shell main:has(.lp-list-page) > div > div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .lp-app-shell main:has(.lp-list-page) > div {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  /* Natural height for short lists, shrinks to fit (and scrolls) for long ones. */
+  .lp-list-page {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  /* Wrapper variant (back link + card): don't clip the card's shadow. */
+  .lp-list-page.lp-list-wrap {
+    overflow: visible;
+  }
+  /* A card the size of the viewport shouldn't lift/jump on hover. */
+  .lp-list-page.lp-card:hover {
+    transform: none;
+    box-shadow: var(--lp-shadow);
+  }
+
+  .lp-list-head,
+  .lp-list-foot {
+    flex-shrink: 0;
+  }
+  .lp-table-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* Column headings stay visible while the rows scroll. */
+.lp-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--color-surface);
+}
+/* A sticky header loses its bottom rule (collapsed-border tables) or never
+   had one (border-separate tables ignore <tr> borders), so draw it on the
+   cells themselves. */
+.lp-table-scroll thead th {
+  box-shadow: inset 0 -1px 0 var(--color-line);
+}
+.lp-table-scroll thead tr {
+  border-bottom-color: transparent;
+}
+/* Denser rows so more records fit on screen. */
+.lp-table-scroll thead th {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.lp-table-scroll tbody td {
+  padding-top: 0.5625rem;
+  padding-bottom: 0.5625rem;
+}

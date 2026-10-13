@@ -1,0 +1,33 @@
+/*
+ * Login hero illustration (components/LoginIllustration.tsx).
+ *
+ * The scene is a transparent animated WebP, so there is deliberately no
+ * background, border, radius or clipping here — it must sit straight on the
+ * brand panel in both themes.
+ */
+
+.lp-ill {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.lp-ill-img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  /* Keep the whole scene (and the form column) on screen on short displays. */
+  max-height: min(46dvh, 540px);
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* Hide the secondary highlight list on short screens so the scene fits. */
+@media (max-height: 1000px) {
+  .lp-ill-hide-short {
+    display: none;
+  }
+}
